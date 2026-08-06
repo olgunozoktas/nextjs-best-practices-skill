@@ -68,8 +68,9 @@ unexpected states, and remember that a thrown error's message may be sanitised i
 
 ## After the write
 
-- **`revalidatePath` / `revalidateTag`** so the affected surfaces are not stale. See
-  [`revalidation.md`](revalidation.md).
+- **`updateTag(tag)`** for the user's own write — it expires immediately, so they see their change.
+  `revalidateTag(tag, profile)` is stale-while-revalidate and will show them the OLD value on the
+  next read. `revalidatePath` where you know the URLs. See [`revalidation.md`](revalidation.md).
 - **`redirect()` after a mutation that changes where the user should be.** Note it works by
   throwing, so do not wrap it in a `try` that swallows.
 - **If the action invalidated the caller's own session** (sign-out, self-deletion, password

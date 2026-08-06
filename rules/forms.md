@@ -45,7 +45,8 @@ it deliberately (some wording is vague on purpose so it cannot be used to enumer
 - **Redirect after a successful mutation that changes location**, so back-navigation does not
   resubmit.
 - **Do not put a secret in a hidden field.** It is in the page. Derive it on the server.
-- **`revalidatePath`/`revalidateTag` after the write**, or the list the user returns to is
-  stale. See [`revalidation.md`](revalidation.md).
+- **`updateTag(tag)` after the write** — a form submit is the read-your-own-writes case, so
+  `revalidateTag` here can still show the user their old data. See
+  [`revalidation.md`](revalidation.md).
 - **Label every input and associate errors with `aria-describedby`.** For the fuller UI review,
   use the official `web-design-guidelines` skill.

@@ -75,7 +75,9 @@ closure**, so:
   expires. **Read the profile's actual numbers rather than assuming from its name**: a profile
   called "days" may revalidate daily and *expire* after a week, which means a stale value can
   be served far longer than the name suggests.
-- **`cacheTag`** labels an entry so `revalidateTag` can invalidate it later. **Tag anything you
+- **`cacheTag`** labels an entry so `updateTag` (immediate, Server Actions) or `revalidateTag`
+  (stale-while-revalidate) can invalidate it later — see [`revalidation.md`](revalidation.md) for
+  which. **Tag anything you
   will need to invalidate on a write** — deciding after the fact means you cannot target it.
   Tag by entity and id (`project:123`), not by page.
 

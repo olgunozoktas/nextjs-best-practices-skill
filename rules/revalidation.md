@@ -26,7 +26,7 @@ and do it again — which is how a working feature produces duplicates.
 
 | API | Behaviour | Use when |
 |---|---|---|
-| **`updateTag(tag, profile)`** | **Immediately expires** the cached data | **Read-your-own-writes** — the user must see their own change now. **Server Actions only** |
+| **`updateTag(tag)`** — ONE argument | **Immediately expires** the cached data | **Read-your-own-writes** — the user must see their own change now. **Server Actions only** |
 | **`revalidateTag(tag, profile)`** | **Stale-while-revalidate** | Background refresh, where a slightly stale read is acceptable |
 | **`refresh()`** | Refetches the current route's RSC payload **without invalidating cached data** | The view depends on state outside the cache that the action just changed |
 
@@ -40,11 +40,21 @@ From the docs, verbatim:
 `updateTag`. Using `revalidateTag` there is stale-while-revalidate, which means the user's next
 read can still be the old value — reproducing the exact bug you were trying to fix.
 
-## Both tag APIs take TWO arguments in Next 16
+## `revalidateTag` takes two arguments. `updateTag` takes ONE.
 
 ```ts
 revalidateTag(tag: string, profile: string | { expire?: number }): void
+updateTag(tag: string): void          // ONE argument. There is no profile.
 ```
+
+> **Corrected again 2026-08-06 — this was my error, twice over.** The first version of this file
+> recommended the deprecated single-argument `revalidateTag`. The *fix* for that then claimed
+> "both tag APIs take TWO arguments" and printed `updateTag(tag, profile)` in the table above.
+> **That signature does not exist**: the docs give `updateTag(tag: string): void`, and all 17
+> `updateTag(` call sites in the corpus are single-argument. So the correction failed the very
+> typecheck it cited as its clincher — `Expected 1 arguments, but got 2. ts(2554)`.
+> The profile argument belongs to `revalidateTag` only. `refresh()` is likewise Server-Actions-only,
+> which the table's wording implied was unique to `updateTag`.
 
 > The single-argument form `revalidateTag(tag)` is deprecated. It currently works if TypeScript
 > errors are suppressed, but this behavior may be removed in a future version. Update to the

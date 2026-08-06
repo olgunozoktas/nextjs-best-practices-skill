@@ -1,6 +1,6 @@
 ---
 name: nextjs-best-practices
-description: "Apply this skill whenever writing, reviewing, or refactoring Next.js App Router code. Triggers on Server and Client Component boundaries, `'use client'` placement, Server Actions and their security, the Data Access Layer pattern and DTOs, Cache Components (`'use cache'`, `cacheLife`, `cacheTag`), revalidation (`revalidatePath`/`revalidateTag`), Route Handlers, `proxy.ts` (Middleware's Next 16 name), error boundaries and what they leak, async dynamic APIs (`cookies`, `headers`, `params`, `searchParams`), forms and `useActionState`, metadata and OG images, and Next 16 upgrade breakage. Also use when diagnosing a route that went dynamic unexpectedly, a Server Action reachable without authorization, a stale page after a mutation, or a hydration mismatch."
+description: "Apply this skill whenever writing, reviewing, or refactoring Next.js App Router code. Triggers on Server and Client Component boundaries, `'use client'` placement, Server Actions and their security, the Data Access Layer pattern and DTOs, Cache Components (`'use cache'`, `cacheLife`, `cacheTag`), revalidation (`updateTag` vs `revalidateTag` vs `refresh`), Route Handlers, `proxy.ts` (Middleware's Next 16 name), error boundaries and what they leak, async dynamic APIs (`cookies`, `headers`, `params`, `searchParams`), forms and `useActionState`, metadata and OG images, and Next 16 upgrade breakage. Also use when diagnosing a route that went dynamic unexpectedly, a Server Action reachable without authorization, a stale page after a mutation, or a hydration mismatch."
 license: MIT
 metadata:
   author: olgunozoktas
@@ -10,6 +10,30 @@ metadata:
 ---
 
 # Next.js Best Practices (App Router)
+
+> ## ⚠️ Verification status — read before trusting an API signature
+>
+> This skill has been through three adversarial review rounds. **Each round found errors, and two
+> of the rounds found errors inside the previous round's fixes** — including a fabricated
+> `updateTag(tag, profile)` signature that does not compile, and `reset()` recommended where 16.3
+> says `retry()`.
+>
+> The pattern is consistent enough to state plainly: **this skill is reliable where it quotes and
+> unreliable where it summarises.** Its prose is more confident than its verification.
+>
+> | Trust | Areas |
+> |---|---|
+> | **Verified, quote-backed, genuinely unmatched officially** | `proxy.md` (the Middleware→Proxy rename, `fetch`-cache-inert, not-for-auth) · `data-security.md` (three architectures, DAL, DTOs, `cache()` for security) · the cache-key-invariance rule · Consistency First |
+> | **Verify against the live doc before acting** | **any API signature**, any version-sensitive default, `revalidation.md`'s table, error-boundary props, Route Handler `GET` caching, `params`-as-dynamic |
+>
+> Two method caveats that produced the original errors and are not fully fixed:
+> **(a)** the corpus is `nextjs.org/docs/llms-full.txt`, of which **~36% is Pages Router** docs
+> (159 of 440 unique URLs) — a grep hit does not tell you which router it came from;
+> **(b)** several load-bearing quotes came from API-reference pages the rule files do not cite.
+>
+> **For Server Action authorization and `'use cache'` purity, prefer the official skills** —
+> `react-best-practices`' `server-auth-actions.md` (`impact: CRITICAL`) and `vercel-optimize`'s
+> static scanner. See the routing table below.
 
 Correctness, security and architecture practices for the Next.js **App Router**, organised as
 an index of rule files. Each rule teaches what to do and why.

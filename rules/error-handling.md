@@ -9,13 +9,22 @@ Next.js `16.3.0`, read `2026-08-06`.
 
 | File | Catches |
 |---|---|
-| `error.tsx` | Errors in that segment's subtree. A Client Component, with `reset()` |
+| `error.tsx` | Errors in that segment's subtree. A Client Component — use **`retry()`**, not `reset()` |
 | `global-error.tsx` | Errors in the root layout — must render its own `<html>`/`<body>` |
 | `not-found.tsx` | `notFound()` calls, and unmatched routes |
 | `forbidden` / `unauthorized` (where enabled) | Authorization failures as first-class states |
 
-**`error.tsx` does not catch errors in the layout above it.** That is what `global-error` is
-for, and a root layout that can throw with no `global-error` produces a blank page. Add one.
+**Use `retry()`, not `reset()` — corrected 2026-08-06.** The docs are explicit: *"In most cases,
+use `retry()` instead of `reset()`. The `reset()` function only clears the error state and
+re-renders without re-fetching, **which means it won't recover from Server Component errors**."*
+An earlier version of this file recommended `reset()` throughout — which produces exactly the
+"boundary that only apologises" this file warns against, since it cannot fix the dominant App
+Router error class.
+
+**`error.tsx` does not catch errors in the layout above it.** That is what `global-error` is for.
+An earlier version claimed a throwing root layout with no `global-error` "produces a blank page" —
+**not supported**: the docs reference a *"built-in 500 page"* whose *"default UI follows the OS
+color scheme"*. The real reason to add `global-error` is theming and control, not blankness.
 
 ## Distinguish "not found" from "not yours" — deliberately
 
@@ -47,8 +56,10 @@ Reserve `error.tsx` for the genuinely unexpected.
 
 ## Practices
 
-- **Every error boundary should offer a way forward** — `reset()`, or a link somewhere real. A
+- **Every error boundary should offer a way forward** — `retry()`, or a link somewhere real. A
   boundary that only apologises is a dead end.
+- **Surface `error.digest`.** It is the documented correlation id: *"You can use the identifier,
+  under `errors.digest`, to match the corresponding server-side logs."* Show it; log against it.
 - **Never render a real `0` for "not measured".** An empty state and a failed load lead a user to
   different actions; conflating them is the most common honest-UI mistake.
 - **`redirect()` throws** — do not swallow it in a `try/catch` around a mutation.

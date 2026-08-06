@@ -27,9 +27,14 @@ not an answer.
 | Was | Now |
 |---|---|
 | `middleware.ts` | **`proxy.ts`** — see [`proxy.md`](proxy.md) |
+| `export function middleware` | `export function proxy` |
+| `skipMiddlewareUrlNormalize` | `skipProxyUrlNormalize` |
 
-Functionality unchanged; the rename signals intent. Older tutorials and answers will use the old
-name indefinitely.
+**"Functionality unchanged" is what the Proxy page says, and it is NOT true for an upgrader —
+corrected 2026-08-06.** The upgrade guide: *"The `edge` runtime is **NOT** supported in `proxy`.
+The `proxy` runtime is `nodejs`, and it cannot be configured. If you want to continue using the
+`edge` runtime, **keep using `middleware`**."* So a project on edge middleware must not simply
+rename the file. Older tutorials will use the old name indefinitely.
 
 ## Upgrading, in an order that keeps you sane
 
