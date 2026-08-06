@@ -27,14 +27,31 @@ it instead. Route by question:
 
 | Question | Use |
 |---|---|
-| Is this render/fetch/bundle fast? Waterfalls, memoisation, re-renders, dynamic imports, JS micro-optimisation | **`react-best-practices`** (official, Vercel Engineering, ~28k words, ~70 rules) |
+| Is this render/fetch/bundle fast? Waterfalls, memoisation, re-renders, dynamic imports, JS micro-optimisation | **`react-best-practices`** (official, Vercel Engineering, **70 rules / ~14.6k words**) |
+| **Server Action authorization** | **`react-best-practices`'s `server-auth-actions.md`** (official, `impact: CRITICAL`) *and* this skill's [`rules/server-actions.md`](rules/server-actions.md) — **they agree; read the official one too** |
+| **`'use cache'` purity (clock/random inside a cached scope)** | **`vercel-optimize`** has a *static scanner* for this (`lib/scanners/use-cache-date-stamp.mjs`) — **better than this skill, which only teaches it.** [`rules/caching.md`](rules/caching.md) for the reasoning |
+| Authorize-next-to-the-query | Official `vercel-optimize`'s `auth-preserving-parallelization.md` covers the core move; this skill's [`rules/data-security.md`](rules/data-security.md) covers the fuller DAL/DTO pattern |
 | **Is this correct, secure, and architecturally right for the App Router?** | **this skill** |
 | How should this be configured/cached/secured on the Vercel *platform*? | **`vercel-platform-practices`** |
 | Deploy it | **`deploy-to-vercel`** (official) |
 | Cost/latency audit of a deployed project | **`vercel-optimize`** (official) |
 
-The split in one line: `react-best-practices` asks *"is this fast?"*; this skill asks *"is this
-right, and can a user reach data they shouldn't?"* They overlap almost nowhere.
+The split in one line: `react-best-practices` is mostly *"is this fast?"*; this skill is *"is this
+right, and can a user reach data they shouldn't?"*
+
+**They do NOT overlap nowhere — corrected 2026-08-06.** An adversarial review found three places
+they meet, and in two of them the official set is equal or better:
+
+- **Server Action authorization** — `server-auth-actions.md` is `impact: CRITICAL` and says the
+  same thing this skill says. A head-on agreement, not a gap.
+- **`'use cache'` purity** — `vercel-optimize` ships a static scanner; this skill only explains
+  the rule. **Use theirs to detect, this one to understand.**
+- **Prop narrowing** — `server-serialization.md` teaches "only pass fields the client actually
+  uses" from a page-weight motive; this skill teaches the same mechanic as a leakage boundary.
+
+What is genuinely absent from the official set: the Middleware→**Proxy** rename, error-boundary
+leakage, the revalidation API choice (`updateTag` vs `revalidateTag`), and the full DAL/DTO
+pattern. Those are this skill's real contribution.
 
 ## Consistency First
 

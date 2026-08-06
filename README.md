@@ -69,9 +69,10 @@ Measured on the upstream repo at `7c180d9`, `react-best-practices` has **70 rule
   weight rather than leakage, but the *mechanic* is the same one this skill teaches.
 
 **What genuinely is absent from it:** the Data Access Layer pattern (0 hits), error-boundary
-leakage (0 hits), the Middleware→Proxy rename (the string `proxy` appears once, inside an
-unrelated filename), `'use cache'` purity, `cacheTag`/`cacheLife`, and `revalidateTag`/`updateTag`
-strategy.
+leakage (0 hits for `error boundar`/`error.tsx`/`global-error`), the Middleware→**Proxy rename**
+(`proxy.ts` never appears; the four `proxy` hits in the official set are a reverse-proxy heuristic,
+a `proxy-revalidate` cache directive, and one filename — **corrected from "appears once"**), and
+the `revalidateTag`/`updateTag` choice.
 
 **And two caveats on the cache claims**, because `react-best-practices` is not the only official
 skill: `vercel-optimize` covers `'use cache'` purity head-on — it ships a **static scanner**
@@ -83,7 +84,7 @@ this skill, with automated detection this skill does not have. The differentiato
 | | `react-best-practices` (official) | `nextjs-best-practices` (this) |
 |---|---|---|
 | Axis | Mostly **is it fast?** | **Is it correct, and can a user reach data they shouldn't?** |
-| Size (same basis: SKILL + rules) | **70 rules, ~14.6k words** | 13 files, ~6.8k words — so **~2.1x**, not 4x |
+| Size (same basis: SKILL.md + rules) | **70 rules, 14,554 words** | 12 rules, **7,710 words** — so **1.89x** |
 | Covers | Waterfalls, bundle size, re-renders, JS micro-optimisation — **plus** Server Action auth and cross-request state leakage | DAL/DTOs as a security boundary, cache purity, revalidation APIs, proxy limits, error leakage, dynamic-API placement |
 | **Real overlap** | **Server Action authorization — a head-on collision, we agree.** Prop narrowing, from different motives. Cross-request state | |
 
@@ -91,10 +92,13 @@ this skill, with automated detection this skill does not have. The differentiato
 prop-narrowing from different motives; we differ on the DAL, cache purity as a correctness
 concern, the revalidation APIs, proxy limits, and error leakage"* — not "they collide nowhere".
 
-A **size correction** while I am here: the "~28k words" figure counted the corpus twice, because
-`AGENTS.md` is a re-expansion of the same 70 rules. Measured on the same basis as this skill,
-the gap is 2.1x. My original "a quarter the size" was over-humble in a way that conveniently
-inflated the "it is vast, therefore mine must be a different axis" premise.
+**Two size corrections, and the second is mine twice over.** The "~28k words" figure
+double-counted, because `AGENTS.md` is a re-expansion of the same 70 rules. And my own "~6.8k"
+was a **rules-only** count set against the official skill's SKILL+rules total — on a row I had
+labelled "same basis". Measured properly the gap is **1.89x**, not 2.1x and certainly not 4x.
+
+That is the same error I had just congratulated myself for catching in their number, committed in
+my own, in the same table, leaning the same way. Recorded rather than quietly repaired.
 
 ### Where this skill is worse
 
@@ -114,9 +118,13 @@ elsewhere:
 1. **Proxy is not authorization**, and `fetch` cache options have **no effect** in it — both
    verbatim from the docs. The Middleware→Proxy rename appears nowhere in the official set.
    *This one is genuinely unique.*
-2. **The Data Access Layer as a security boundary** — authorize next to the query, return DTOs,
-   `cache()` the session read for the documented security reason. 0 hits for "data access" in the
-   official set.
+2. **The full Data Access Layer pattern** — DTOs, `cache()` on the session read for the
+   documented security reason, one architecture chosen and not mixed. **But "0 hits for 'data
+   access'" was false** (corrected 2026-08-06): `vercel-optimize`'s
+   `auth-preserving-parallelization.md` prescribes *"combining the guard and data lookup into one
+   query constrained by the authenticated user, tenant, or ownership key"* — which is
+   authorize-next-to-the-query, the core move. **Read that file too.** What remains this skill's
+   is the surrounding pattern, not the central insight.
 3. **The revalidation APIs, correctly** — `updateTag` for read-your-own-writes, the two-argument
    `revalidateTag`, `refresh()`. Not in `react-best-practices`; `vercel-optimize` gates
    `revalidateTag` from a cost angle but does not teach the choice.
