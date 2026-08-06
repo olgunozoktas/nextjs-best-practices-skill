@@ -39,8 +39,11 @@ is to convert the parent.
 Props to a Client Component are serialised and **shipped to the browser, where they are
 readable.** Two consequences:
 
-- **Serialisable only.** No functions (except Server Actions), no class instances, no `Map`/`Set`
-  unless supported, no `Date` assumptions — check before relying on one.
+- **Serialisable only** — but the list is more generous than the first version of this file
+  implied. `Date`, `Map`, `Set`, TypedArrays and ArrayBuffers **are supported**: the docs say you
+  "can use values like `Date`, `Map`, `Set`, and more without any extra steps." What does **not**
+  cross is functions (except Server Actions) and **class instances**, which are listed under
+  "Unsupported types".
 - **Everything you pass is public.** This is a security property, not a performance one: pass
   DTOs, never database rows. See [`data-security.md`](data-security.md).
 

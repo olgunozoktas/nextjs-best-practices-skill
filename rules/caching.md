@@ -36,18 +36,38 @@ function's arguments — which is exactly why an argument is a tempting and dang
 reads inside cached scopes costs an hour and catches the class. Review does not: two instances
 in two days, in one codebase, is an observed rate.
 
+## `'use cache'` requires `cacheComponents: true` — this is opt-in
+
+**Corrected 2026-08-06.** The first version of this file documented `'use cache'`, `cacheLife`
+and `cacheTag` with no prerequisite. There is one:
+
+> "`use cache` is a Cache Components feature. To enable it, add the `cacheComponents` option to
+> your `next.config.ts` file."
+
+**So everything in this section is inert on a default Next 16 app.** Check `next.config.ts`
+before applying any of it — and see the two-models warning at the foot of this file, which the
+earlier version of this section managed to violate.
+
 ## `'use cache'`
 
 Marks a function, component, or route as cacheable. Cached on its **arguments and captured
 closure**, so:
 
 - **Keep arguments serialisable and few.** A large object argument is a large cache key.
-- **A cached component may not read request state.** `cookies()`, `headers()`, `draftMode()`
-  and the session are all out — and if you need per-reader output, the varying part belongs
-  outside the boundary, usually behind `<Suspense>`.
-- **`'use cache: private'`** exists for per-request caching that *may* read request state; its
-  entries are not shared between visitors. Reach for it deliberately, and know it is not a
-  shared cache.
+- **A cached component may not read most request state.** `cookies()` and `headers()` are out.
+  **`draftMode()` is the documented exception** — corrected here, because the first version of
+  this file named it as forbidden: *"You **can** read `isEnabled` from `draftMode()` inside a
+  `use cache` scope, however, other runtime APIs like `cookies()` and `headers()` are not
+  allowed, even when Draft Mode is active."*
+- **`'use cache: private'`** may read runtime request APIs, and its entries are not shared
+  between visitors — but the mechanism is not "per-request" as the first version said. Per the
+  docs, results are *"never stored on the server, they're cached only in the browser's memory and
+  do not persist across page reloads"*, and it is **excluded from the static shell**. Those two
+  facts, not the sharing, are what govern when it is usable.
+- **`'use cache: remote'`** is the third directive and was missing entirely. It matters on
+  serverless: the default in-memory store *"will not persist across instances"*, so `remote`
+  moves the entry to a durable shared cache handler — *"a network roundtrip that pays off only at
+  a **high hit rate**."*
 
 ## `cacheLife` and `cacheTag`
 
@@ -59,14 +79,21 @@ closure**, so:
   will need to invalidate on a write** — deciding after the fact means you cannot target it.
   Tag by entity and id (`project:123`), not by page.
 
-## Static shell, dynamic hole
+## Static shell, dynamic hole — **only with Cache Components enabled**
 
-The App Router's shape is a prerendered shell with dynamic content streamed in. Reading request
-state at the top of a page makes the whole route dynamic; reading it inside a `<Suspense>`
-boundary keeps the shell static.
+**This section was stated unconditionally and that was wrong.** With `cacheComponents: true`, a
+request-state read inside a `<Suspense>` boundary keeps the shell static:
 
-**This is the mechanism behind most "why is my page dynamic?" questions**, and the fix is
-almost always to move the request-dependent read down into a boundary rather than to remove it.
+> "Reading `cookies()` here doesn't opt-in the whole route into dynamic rendering, **the way the
+> previous rendering model did**."
+
+**Without Cache Components — i.e. on a default Next 16 app — it does not work:**
+
+> "**Without Cache Components**, reading `cookies()`, `headers()`, or `searchParams` opts **the
+> whole route** into dynamic rendering."
+
+So check the flag first. On the previous model the fix is different, and applying this one there
+achieves nothing.
 
 A related trap: a value that is *cheap but request-dependent* (a locale, the current year) makes
 a whole route dynamic if read at the top. Push it behind a boundary, or accept dynamic

@@ -15,9 +15,22 @@ Refresh with `git pull`. Nothing to build, nothing to run, works offline.
 
 ## Provenance and version pinning
 
-Facts trace to `nextjs.org/docs`, cited by URL in the rule file that uses them. They were read
-out of the official documentation corpus — `nextjs.org/docs/llms-full.txt`, **449 documents,
-`version: 16.3.0`, `@router: App Router`** — rather than recalled.
+Facts trace to `nextjs.org/docs`, cited by URL in the rule file that uses them, from
+`nextjs.org/docs/llms-full.txt` — **449 documents (446 stamped `version: 16.3.0`),
+`@router: App Router`**.
+
+> **An honest correction to this claim, 2026-08-06.** The first version said facts were "read out
+> of the corpus rather than recalled". **That was not uniformly true**, and an adversarial review
+> proved it: the security, DAL and Proxy material *was* extracted from the corpus and is
+> verbatim-accurate, but the caching, revalidation and asset rules were written from prior
+> Next-15-era knowledge and given 16.3 citations afterwards. That produced five real errors — a
+> deprecated `revalidateTag` signature, a missing `updateTag`, a deprecated `priority` prop,
+> `draftMode()` wrongly listed as forbidden inside `'use cache'`, and Cache-Components-only
+> behaviour presented as the App Router default.
+>
+> All five are fixed and each carries an inline correction note. The lesson is the one this skill
+> teaches in `caching.md`: **a citation is not provenance.** Verify load-bearing numbers against
+> the live doc for your installed version.
 
 **Version pinning is not a formality for this framework.** Across recent majors, the caching
 defaults changed, the dynamic APIs became async, and **Middleware was renamed to Proxy**. Most
@@ -31,29 +44,61 @@ Install [`vercel-labs/agent-skills`](https://github.com/vercel-labs/agent-skills
 `react-best-practices` is larger and written by the people who build the framework — and it is
 about a **different axis**.
 
-Measured on the upstream repo at `7c180d9`, `react-best-practices` is 76 files / ~28k words, and
-its rule filenames are: `js-*` (micro-optimisation — `js-set-map-lookups`, `js-hoist-regexp`,
-`js-early-exit`), `bundle-*`, `rerender-*`, `rendering-*`, `client-*`, `async-*`, `advanced-*`.
+> **This section was rewritten 2026-08-06 after an adversarial review refuted its central
+> claim.** The original said `react-best-practices` had "no rule about Server Action
+> authorization". **That is false**, and it was false in the way that most flattered this skill.
+> The original also enumerated seven rule prefixes while omitting `server-*` — the one category
+> containing the rule that refutes it. Both are corrected below, and the honest overlap is larger
+> than I first wrote.
 
-It is a **performance** skill. There is no rule about Server Action authorization, the Data
-Access Layer, DTOs across the boundary, `'use cache'` purity, `revalidateTag` strategy, the
-Middleware→Proxy rename, or what an error boundary leaks — because those are not performance
-questions.
+Measured on the upstream repo at `7c180d9`, `react-best-practices` has **70 rules** (its own
+`SKILL.md` says so) across 8 prefixes: `rerender-` 15, `js-` 14, `rendering-` 11, **`server-` 10**,
+`bundle-` 6, `async-` 6, `client-` 4, `advanced-` 4.
+
+**It is mostly a performance skill, but not exclusively — and it has two security rules:**
+
+- **`server-auth-actions.md`** — "Authenticate Server Actions Like API Routes",
+  `impact: CRITICAL`, `tags: … security, authorization`. It says Server Actions "are exposed as
+  public endpoints, just like API routes", tells you to verify auth **inside** each action, warns
+  against relying on middleware or layout guards, and ships a zod-validated example. **This is
+  nearly identical to what was previously listed here as this skill's #1 differentiator.**
+- **`server-no-shared-module-state.md`** — cross-request contamination, "security bugs where one
+  user's data appears in another user's response". A tenancy-leak rule, not a performance rule.
+- **`server-serialization.md`** — "Only pass fields that the client actually uses", with a
+  50-field `user` prop narrowed to `name`. The token "DTO" never appears, and the motive is page
+  weight rather than leakage, but the *mechanic* is the same one this skill teaches.
+
+**What genuinely is absent from it:** the Data Access Layer pattern (0 hits), error-boundary
+leakage (0 hits), the Middleware→Proxy rename (the string `proxy` appears once, inside an
+unrelated filename), `'use cache'` purity, `cacheTag`/`cacheLife`, and `revalidateTag`/`updateTag`
+strategy.
+
+**And two caveats on the cache claims**, because `react-best-practices` is not the only official
+skill: `vercel-optimize` covers `'use cache'` purity head-on — it ships a **static scanner**
+(`lib/scanners/use-cache-date-stamp.mjs`) for `new Date()` / `Date.now()` / `Math.random()` inside
+a `'use cache'` file, plus `revalidateTag` gates. So on that topic the official set is ahead of
+this skill, with automated detection this skill does not have. The differentiator is the *reason*
+(correctness for the reader vs ISR write amplification), not the topic.
 
 | | `react-best-practices` (official) | `nextjs-best-practices` (this) |
 |---|---|---|
-| Axis | **Is it fast?** | **Is it correct, and can a user reach data they shouldn't?** |
-| Size | 76 files, ~28k words | 13 files, ~6.8k words |
-| Covers | Waterfalls, bundle size, re-renders, hydration perf, JS micro-optimisation | Boundary as a trust boundary, Server Action security, DAL/DTOs, cache purity, revalidation, proxy limits, error leakage, dynamic-API placement |
-| Overlap | Hydration and Suspense, from opposite directions | |
+| Axis | Mostly **is it fast?** | **Is it correct, and can a user reach data they shouldn't?** |
+| Size (same basis: SKILL + rules) | **70 rules, ~14.6k words** | 13 files, ~6.8k words — so **~2.1x**, not 4x |
+| Covers | Waterfalls, bundle size, re-renders, JS micro-optimisation — **plus** Server Action auth and cross-request state leakage | DAL/DTOs as a security boundary, cache purity, revalidation APIs, proxy limits, error leakage, dynamic-API placement |
+| **Real overlap** | **Server Action authorization — a head-on collision, we agree.** Prop narrowing, from different motives. Cross-request state | |
 
-**Use both.** They collide almost nowhere, and the overlap that exists is complementary: their
-hydration rules are about flicker and cost; ours is about the server and client computing the
-same string.
+**Use both.** But the honest framing is *"we agree on Server Action authorization and arrive at
+prop-narrowing from different motives; we differ on the DAL, cache purity as a correctness
+concern, the revalidation APIs, proxy limits, and error leakage"* — not "they collide nowhere".
+
+A **size correction** while I am here: the "~28k words" figure counted the corpus twice, because
+`AGENTS.md` is a re-expansion of the same 70 rules. Measured on the same basis as this skill,
+the gap is 2.1x. My original "a quarter the size" was over-humble in a way that conveniently
+inflated the "it is vast, therefore mine must be a different axis" premise.
 
 ### Where this skill is worse
 
-- **Smaller, and deliberately narrower.** A quarter the size.
+- **Smaller, and deliberately narrower** — about half the size on a like-for-like basis (see the correction above).
 - **No performance guidance.** Deferred entirely, with a routing table at the top of `SKILL.md`.
 - **A snapshot, not a live feed.** Pinned to 16.3.0; a framework this fast-moving will outrun it.
   The rules carry source URLs so any number can be re-checked.
@@ -61,15 +106,25 @@ same string.
   new projects and to enforce authorization at the data layer. That is the documented
   recommendation, but it is a stance.
 
-## The three highest-value things in it
+## What is actually distinctive here
 
-1. **Every export of a `'use server'` module is a public HTTP endpoint.** Authorize inside the
-   action, from the session — never from an argument, and never because the UI hid the button.
-2. **A cached value must be a function of its cache key** — not the clock, not the request, not
-   the reader. Nothing errors when you get this wrong; a stale-but-plausible value is served for
-   the whole window.
-3. **Proxy is not authorization.** The docs say it "should not be used as a full session
-   management or authorization solution", and that `fetch` cache options have no effect there.
+Revised down from "the three highest-value things" once two of the three turned out to be covered
+elsewhere:
+
+1. **Proxy is not authorization**, and `fetch` cache options have **no effect** in it — both
+   verbatim from the docs. The Middleware→Proxy rename appears nowhere in the official set.
+   *This one is genuinely unique.*
+2. **The Data Access Layer as a security boundary** — authorize next to the query, return DTOs,
+   `cache()` the session read for the documented security reason. 0 hits for "data access" in the
+   official set.
+3. **The revalidation APIs, correctly** — `updateTag` for read-your-own-writes, the two-argument
+   `revalidateTag`, `refresh()`. Not in `react-best-practices`; `vercel-optimize` gates
+   `revalidateTag` from a cost angle but does not teach the choice.
+4. **What an error boundary leaks**, and `global-error` as a hard requirement. 0 hits for "error
+   boundary" officially.
+
+**Not distinctive, contrary to what this README first claimed:** Server Action authorization
+(`server-auth-actions.md`, CRITICAL) and `'use cache'` purity (`vercel-optimize` has a scanner).
 
 ## Companion skills
 

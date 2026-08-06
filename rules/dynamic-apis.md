@@ -27,15 +27,18 @@ There are codemods for the migration; use them rather than hand-editing.
 
 ## Reading one makes the route dynamic — and that is the real subject
 
-Any of these reads opts the route out of static rendering **from that point up**. So *where* you
-read matters as much as whether:
+**With `cacheComponents: true`**, *where* you read matters as much as whether:
 
 - **At the top of a page** → the whole route is dynamic.
 - **Inside a `<Suspense>` boundary** → the shell stays static and only the boundary is dynamic.
 
-**This is the answer to most "why is my page dynamic?" questions.** The fix is usually not to
-stop reading the value but to move the read down into a boundary. See
-[`caching.md`](caching.md).
+**Without Cache Components — the default — any of these reads opts the WHOLE route into dynamic
+rendering**, wherever you put it: *"Without Cache Components, reading `cookies()`, `headers()`, or
+`searchParams` opts the whole route into dynamic rendering."*
+
+**Corrected 2026-08-06**: the first version stated the boundary fix unconditionally and called it
+"the answer to most 'why is my page dynamic?' questions". It is the answer only on Cache
+Components. Check `next.config.ts` first. See [`caching.md`](caching.md).
 
 Watch for the cheap-but-dynamic read: a locale, a theme cookie, the current year. Individually
 trivial, and each one at the top of a layout makes every page under it dynamic.

@@ -74,8 +74,10 @@ invisible in the rendered output.
 - **Map explicitly** — `{ id, name }`, not `...user`.
 - **Never spread a row across the boundary.** `{...user}` today is a leak the first time
   somebody adds a column.
-- **Prefer a class over a bare object** for the user model, as the docs suggest, so fields are
-  not accidentally enumerable across the boundary.
+- **Prefer a class over a bare object** for the user model, as the docs suggest. The mechanism is
+  stronger than the "enumerable fields" reason the first version of this file gave: **class
+  instances are an unsupported serialisation type**, so a class simply *cannot* cross to a Client
+  Component. The boundary rejects it rather than trusting you to have trimmed it.
 
 ## Where authorization goes
 

@@ -12,9 +12,12 @@ Next.js `16.3.0`, read `2026-08-06`.
 
 - **Export `metadata` (static) or `generateMetadata` (dynamic)** rather than writing `<head>`
   tags by hand — the framework dedupes and merges across the layout tree.
-- **`generateMetadata` makes the route await its data**, so a slow call there delays the whole
-  document. Keep it to what the tags need, and reuse the page's data function (a `cache()`-
-  wrapped read is fetched once for both).
+- **`generateMetadata` does NOT block UI rendering on dynamically rendered pages** — corrected
+  2026-08-06, the first version said it delayed the whole document. The docs: *"For dynamically
+  rendered pages, Next.js streams metadata separately, injecting it into the HTML once
+  `generateMetadata` resolves, **without blocking UI rendering**."* It *does* gate prerendered
+  pages and `htmlLimitedBots`. Either way, reuse the page's data function — a `cache()`-wrapped
+  read is fetched once for both.
 - **Every page needs a distinct title and description.** Inherited-everywhere metadata is a
   duplicate-content problem and reads as unfinished when shared.
 - **Set a canonical URL** for anything reachable at more than one path.
@@ -27,8 +30,14 @@ Next.js `16.3.0`, read `2026-08-06`.
 
 - **`next/image` over `<img>`** — you get sizing, format negotiation and lazy loading.
 - **Always set `width`/`height` or `fill`.** Omitting them is the layout-shift bug.
-- **`priority` on the LCP image, and only that one.** Marking everything priority preloads
-  everything, which is the same as prioritising nothing.
+- **`priority` is DEPRECATED in Next 16** — corrected 2026-08-06. *"Starting with Next.js 16,
+  the `priority` property has been deprecated in favor of the `preload` property in order to make
+  the behavior clear."* And even `preload` is second choice: *"In most cases, you should use
+  `loading="eager"` or `fetchPriority="high"` instead of `preload`."*
+  So: reach for `loading="eager"` / `fetchPriority="high"` on the LCP image. Do not apply it
+  broadly — but note the docs also list *"multiple images that could be considered the LCP element
+  depending on the viewport"* under when NOT to use it, so a flat "only one image, ever" is too
+  strong for responsive art direction.
 - **Set `sizes` when the image is responsive**, or the browser downloads a wrong-sized asset.
 - **Image optimisation costs money on most hosts.** Optimising a decorative 20px icon at request
   time is waste; ship it as a correctly sized static asset.
