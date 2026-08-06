@@ -38,10 +38,11 @@ metadata:
 Correctness, security and architecture practices for the Next.js **App Router**, organised as
 an index of rule files. Each rule teaches what to do and why.
 
-**Grounded and version-pinned.** Every factual claim traces to `nextjs.org/docs`, cited by URL
-in the rule file. The facts were read out of the official documentation corpus
-(`nextjs.org/docs/llms-full.txt` — 449 documents, `version: 16.3.0`, `@router: App Router`)
-rather than recalled. **Next.js moves fast and renames things** — Middleware became Proxy in
+**Version-pinned, and see the status block above on provenance.** Claims trace to
+`nextjs.org/docs` URLs cited in each rule file, from `nextjs.org/docs/llms-full.txt` — 449 title
+blocks, 440 unique URLs, 446 stamped `version: 16.3.0`. The corpus header says
+`@router: App Router` but qualifies it, and **159 of those URLs are `/docs/pages/…`** — so the
+corpus is not App-Router-only and a grep hit does not identify its router. **Next.js moves fast and renames things** — Middleware became Proxy in
 16 — so re-verify anything load-bearing against the live doc for *your* installed version.
 
 ## Read this first: this is not a performance skill
