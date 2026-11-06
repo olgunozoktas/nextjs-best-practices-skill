@@ -6,9 +6,8 @@ the Data Access Layer pattern, Cache Components, revalidation, `proxy.ts`, error
 async dynamic APIs, forms, metadata, and upgrading.
 
 ```sh
-git clone https://github.com/olgunozoktas/nextjs-best-practices-skill.git \
-  ~/Herd/nextjs-best-practices-skill
-ln -s ~/Herd/nextjs-best-practices-skill ~/.claude/skills/nextjs-best-practices
+git clone https://github.com/olgunozoktas/nextjs-best-practices-skill.git
+ln -s "$PWD/nextjs-best-practices-skill" ~/.claude/skills/nextjs-best-practices
 ```
 
 Refresh with `git pull`. Nothing to build, nothing to run, works offline.
